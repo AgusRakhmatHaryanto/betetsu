@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+  // url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum Role {
+  admin
+  bengkel
+  customer
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SHIPPED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAYED
+  ACC
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.VarChar(50)
+  username   String?  @db.VarChar(100)
+  email      String   @db.VarChar(100)
+  password   String   @db.VarChar(100)
+  name       String?  @db.VarChar(100)
+  phone      String?  @db.VarChar(50)
+  avatarUrl  String?  @db.VarChar(200)
+  imgId      String?  @db.VarChar(200)
+  role       Role     @default(customer)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+  street     String?  @db.VarChar(255)
+  village    String?  @db.VarChar(150)
+  district   String?  @db.VarChar(150)
+  city       String?  @db.VarChar(150)
+  province   String?  @db.VarChar(150)
+  postalCode String?  @db.VarChar(10)
+  reviews    Review[]
+  orders     Order[]
+}
+
+model Progress {
+  id          String    @id @default(uuid()) @db.VarChar(50)
+  description String?   @db.Text()
+  orderItemId String    @db.VarChar(50)
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+}
+
+model Review {
+  id          String     @id @default(uuid()) @db.VarChar(50)
+  description String?    @db.Text()
+  orderId     String     @db.VarChar(50)
+  order       Order      @relation(fields: [orderId], references: [id])
+  userId      String     @db.VarChar(50)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      Int?       @default(0)
+  productId   String?    @db.VarChar(50)
+  product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamp(6)
+  OrderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+  orderItemId String?    @db.VarChar(50)
+}
+
+model Category {
+  id                String            @id @default(uuid()) @db.VarChar(50)
+  name              String            @unique @db.VarChar(100)
+  productCategories ProductCategory[]
+  createdAt         DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime          @updatedAt @db.Timestamp(6)
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+}
+
+model Product {
+  id          String            @id @default(uuid()) @db.VarChar(50)
+  name        String?           @db.VarChar(255)
+  description String?           @db.Text()
+  coverImage  String?           @db.VarChar(200)
+  imgId       String?           @db.VarChar(200)
+  price       Float?            @default(0)
+  categories  ProductCategory[]
+  createdAt   DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime          @updatedAt @db.Timestamp(6)
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model Order {
+  id            String        @id @default(uuid()) @db.VarChar(50)
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  note          String?       @db.Text()
+  userId        String?       @db.VarChar(50)
+  totalPrice    Float?        @default(0)
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime      @updatedAt @db.Timestamp(6)
+  street        String?       @db.VarChar(255)
+  village       String?       @db.VarChar(150)
+  district      String?       @db.VarChar(150)
+  city          String?       @db.VarChar(150)
+  province      String?       @db.VarChar(150)
+  postalCode    String?       @db.VarChar(10)
+  items         OrderItem[]
+
+  paymentProof PaymentProof?
+  Review       Review[]
+}
+
+model PaymentProof {
+  id         String   @id @default(uuid()) @db.VarChar(50)
+  orderId    String   @unique @db.VarChar(50)
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  imageUrl   String   @db.VarChar(200)
+  imgId      String   @db.VarChar(200)
+  senderName String?  @db.VarChar(100)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @db.Timestamp(6)
+}
+
+model OrderItem {
+  id              String     @id @default(uuid()) @db.VarChar(50)
+  orderId         String?    @db.VarChar(50)
+  order           Order?     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String?    @db.VarChar(50)
+  product         Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  size            Float      @default(0)
+  price           Float      @default(0)
+  createdAt       DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime   @updatedAt @db.Timestamp(6)
+  progressUpdates Progress[]
+  reviews         Review[]
+}
