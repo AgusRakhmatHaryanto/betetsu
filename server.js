@@ -7,7 +7,7 @@ const morgan = require("morgan");
 const PORT = process.env.PORT;
 const API_URL = process.env.API_URL;
 const corsOptions = {
-  origin: ['http://localhost:8082', 'https://fetetsu.vercel.app', 'https://tetsuberkahtralis-a8d9303c3210.herokuapp.com/'],
+  origin: ['http://localhost:8082', 'https://fetetsu.vercel.app', 'https://tetsuberkahtralis-d468dab9b88e.herokuapp.com/'],
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, Authorization, *',
