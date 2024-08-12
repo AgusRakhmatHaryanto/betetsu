@@ -9,6 +9,10 @@ const { generateToken } = require("../utils/jwt");
 
 const create = async (data, file) => {
   try {
+    const findUser = await userRepository.getUserByEmail(data.email);
+    if(findUser){
+      throw new Error("User sudah ada");
+    }
     const hashedPassword = await hashPassword(data.password);
     if (file) {
       const result = await uploadToCloudinary(file);
@@ -18,9 +22,7 @@ const create = async (data, file) => {
     data.password = hashedPassword;
 
     const user = await userRepository.createUser(data);
-    if(!user){
-      throw new Error("Gagal membuat user");
-    }
+
     return user;
   } catch (error) {
     console.log(error)
