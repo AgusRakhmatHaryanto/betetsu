@@ -6,7 +6,6 @@ const {
 } = require("../utils/cloudinaryHandler");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/jwt");
-const { prisma } = require("../config/prismaInit");
 
 const create = async (data, file) => {
   try {
