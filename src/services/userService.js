@@ -6,13 +6,11 @@ const {
 } = require("../utils/cloudinaryHandler");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/jwt");
+const { prisma } = require("../config/prismaInit");
 
 const create = async (data, file) => {
   try {
-    const findUser = await userRepository.getUserByEmail(data.email);
-    if(findUser){
-      throw new Error("User sudah ada");
-    }
+
     const hashedPassword = await hashPassword(data.password);
     if (file) {
       const result = await uploadToCloudinary(file);

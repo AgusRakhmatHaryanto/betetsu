@@ -2,6 +2,12 @@ const { prisma } = require("../config/prismaInit");
 
 const createUser = async (data) => {
   try {
+    const findUser = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (findUser) {
+      throw new Error("User sudah ada");
+    }
     return await prisma.user.create({ data });
   } catch (error) {
     throw new Error(`Gagal membuat user: ${error.message}`);
